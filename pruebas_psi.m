@@ -6,17 +6,17 @@ N       = 512; % Number of columns of each interferogram.
 k       = 5;   % Number of frames.
 A       = 25;  % Amplitud para la fase tipo Peaks.
 
-step    = pi/2; % Valor del paso.
-nv      = 0.8; % Varianza del Ruido.
+step    = pi/3; % Valor del paso.
+nv      = 0.0; % Varianza del Ruido.
 
 DC      = makeParabola(M,N,15);
 rampa   = makeRampa(0.051,0.051,M,N);
 phase   = makePeaks(N,M,A)+rampa;
 b       = 1;
-step_noise = 0.0;
+step_noise = 0.5;
 
 [I,steps]       = makeI(DC,b,phase,step,step_noise,k,nv);
-%steps = atan2(sin(steps),cos(steps));
+steps = atan2(sin(steps),cos(steps));
 
 
 %% Inicializando parametros del metodo RST.
@@ -41,7 +41,7 @@ Show  = 1; % 1 si se decea mostrar resultados parciales.
 tic
 [pasosRST f_RST S C a] = RST(I,Sk,Ck,lambdaDC,lambdaSC,Muestreo,iters1,iters2,Show);
 tRST = toc;
-pasosRST=AntiAliasing(pasosRST)
+pasosRST=AntiAliasing(pasosRST);
 % Aplicando algoritmo AIA.
 tic
 [pasosAIA f_AIA] = AIA(I,Sk,Ck,iters,Show);
@@ -51,7 +51,13 @@ tAIA = toc;
 pasosRST = pasosRST-pasosRST(1);
 Sk = sin(pasosRST);
 Ck = cos(pasosRST);
+
 [a1 f_RST] = MinCuaCpp(I,Sk,Ck);
+f_RSTreg = f_RST;
+for x=1:200
+    [a f_RSTreg] = MinCuaReg(I,f_RSTreg,a,Sk,Ck,15,3);
+end
+
 pasosRST = atan2(Sk,Ck);
 
 pasosAIA = pasosAIA-pasosAIA(1);
@@ -62,12 +68,17 @@ pasosAIA = atan2(Sk,Ck);
 
 %% Mostrando Resultados.
 
-SP_RST = angle(f_RST);
-SP_AIA = angle(f_AIA);
+SP_RSTreg = angle(f_RSTreg);
+SP_RST    = angle(f_RST);
+SP_AIA    = angle(f_AIA);
+wfase     = angle(exp(-1i*phase));
+errorReg = mean2(abs(wfase+SP_RSTreg));
 
+figure,imshow(-SP_RSTreg,[]),title('fase Estimada RST regularizada');
 figure,imshow(SP_RST,[]),title('fase Estimada RST');
 figure,imshow(SP_AIA,[]),title('fase Estimada AIA');
-figure,imshow(angle(exp(-1i*phase)),[]),title('fase Esperada');
+figure,imshow(wfase,[]),title('fase Esperada');
+figure,imshow(I(:,:,1),[]),title('Interferograma de Entrada');
 
 disp('Estimados AIA');
 disp(pasosAIA);
@@ -84,5 +95,5 @@ disp(abs(steps - pasosAIA));
 disp('Error RST');
 disp(abs(steps - pasosRST));
 
-figure;
-imshow(I(:,:,1),[]),title('Interferograma de Entrada');
+disp('Error medio de fase');
+disp(errorReg);

@@ -11,29 +11,16 @@ function [steps f S C a] = RST(I,Sk,Ck,lambdaDC,lambdaSC,Muestreo,iters1,iters2,
     
 %     fi = I(:,:,1)-I(:,:,3);
 %     psi= I(:,:,4)-I(:,:,2);
-
-    [M N k] = size(I);
-    a1      = ones(M,N);
-    f       = complex(a1,a1);
-    
-    for x=1:200
-            [a1 f] = MinCuaReg(I,f,a1,Sk,Ck,7.5,1);
-    end
-    
+  
     figure,
     for n=1:iters1
         
-        for x=1:100
-            [a1 f] = MinCuaReg(I,f,a1,Sk,Ck,7.5,1);
-        end
-%         a = a1;
-%         ftmp = f;
-%        [a1 f] = MinCuaCpp(I,Sk,Ck);
+        [a f] = MinCuaCpp(I,Sk,Ck);
         ftmp = f(1:q:end,1:q:end);% Submuestreando fase calculada.
-        a   = a1(1:q:end,1:q:end);
+        a1   = a(1:q:end,1:q:end);
 
         for x=1:iters2
-            [a S C] = gs_aCkSk(Itmp,ftmp,a,S,C,lambdaDC,lambdaSC);
+            [a1 S C] = gs_aCkSk(Itmp,ftmp,a1,S,C,lambdaDC,lambdaSC);
         end
         
         steps = get_ModaPasos(S,C);

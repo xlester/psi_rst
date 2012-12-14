@@ -80,8 +80,8 @@ void MinCuaReg(double *gDC,double *gPhi,double *gPsi,double *DC,double *Phi,doub
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs,
                  const mxArray *prhs[])
 {
-  if (nrhs!=7) {
-    mexErrMsgTxt("Se requieren 7 parametros");
+  if (nrhs!=8) {
+    mexErrMsgTxt("Se requieren 8 parametros, el segundo se supone complejo");
   }
   double *I       = mxGetPr(prhs[0]);
   double *Phi     = mxGetPr(prhs[1]);
@@ -91,6 +91,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs,
   double *CCalpha = mxGetPr(prhs[4]);
   double lambdaf  = *mxGetPr(prhs[5]);
   double lambdaDC = *mxGetPr(prhs[6]);
+  int   iters     = *mxGetPr(prhs[7]);
   
   const int *Dims = mxGetDimensions(prhs[0]);
 
@@ -105,6 +106,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs,
   double* gPhi    = mxGetPr(plhs[1]);
   double* gPsi    = mxGetPi(plhs[1]);
 
-  
-  MinCuaReg(gDC,gPhi,gPsi,DC,Phi,Psi,SSalpha,CCalpha,I,lambdaf,lambdaDC,mI,nI,kI);
+  for(int n=0;n<iters;n++){
+      
+    MinCuaReg(gDC,gPhi,gPsi,DC,Phi,Psi,SSalpha,CCalpha,I,lambdaf,lambdaDC,mI,nI,kI);
+    
+    DC = gDC;
+    Phi = gPhi;
+    Psi = gPsi;
+    printf("Iteracion: %d \n",n);
+  }
 }
