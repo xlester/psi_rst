@@ -113,6 +113,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs,
     DC = gDC;
     Phi = gPhi;
     Psi = gPsi;
-    printf("Iteracion: %d \n",n);
+    //printf("Iteracion: %d \n",n);
   }
 }

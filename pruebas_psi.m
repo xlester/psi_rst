@@ -1,19 +1,20 @@
 %% Generando Interferogramas Sinteticos.
 close all;
 clear all;
-M       = 512; % Number of rows of each interferogram.
-N       = 512; % Number of columns of each interferogram.
+M       = 256; % Number of rows of each interferogram.
+N       = 256; % Number of columns of each interferogram.
 k       = 5;   % Number of frames.
-A       = 25;  % Amplitud para la fase tipo Peaks.
+A       = 40;  % Amplitud para la fase tipo Peaks.
 
-step    = pi/3; % Valor del paso.
+step    = pi/2; % Valor del paso.
 nv      = 0.0; % Varianza del Ruido.
 
-DC      = makeParabola(M,N,15);
-rampa   = makeRampa(0.051,0.051,M,N);
-phase   = makePeaks(N,M,A)+rampa;
-b       = 1;
-step_noise = 0.5;
+%DC      = makeParabola(M,N,55);
+DC      = makeGausiana(M,N,5,60);
+phase   = makeRampa(4*pi/M,4*pi/N,M,N);
+%phase   = makePeaks(N,M,A)+rampa;
+b       = makeGausiana(M,N,1,95);
+step_noise = 0;
 
 [I,steps]       = makeI(DC,b,phase,step,step_noise,k,nv);
 steps = atan2(sin(steps),cos(steps));
@@ -53,10 +54,10 @@ Sk = sin(pasosRST);
 Ck = cos(pasosRST);
 
 [a1 f_RST] = MinCuaCpp(I,Sk,Ck);
-f_RSTreg = f_RST;
-for x=1:200
-    [a f_RSTreg] = MinCuaReg(I,f_RSTreg,a,Sk,Ck,15,3);
-end
+% f_RSTreg = f_RST;
+% for x=1:200
+%     [a f_RSTreg] = MinCuaReg(I,f_RSTreg,a,Sk,Ck,1,15,3);
+% end
 
 pasosRST = atan2(Sk,Ck);
 
@@ -68,13 +69,13 @@ pasosAIA = atan2(Sk,Ck);
 
 %% Mostrando Resultados.
 
-SP_RSTreg = angle(f_RSTreg);
+%SP_RSTreg = angle(f_RSTreg);
 SP_RST    = angle(f_RST);
 SP_AIA    = angle(f_AIA);
 wfase     = angle(exp(-1i*phase));
-errorReg = mean2(abs(wfase+SP_RSTreg));
+errorReg = mean2(abs(wfase+SP_RST));
 
-figure,imshow(-SP_RSTreg,[]),title('fase Estimada RST regularizada');
+%figure,imshow(-SP_RSTreg,[]),title('fase Estimada RST regularizada');
 figure,imshow(SP_RST,[]),title('fase Estimada RST');
 figure,imshow(SP_AIA,[]),title('fase Estimada AIA');
 figure,imshow(wfase,[]),title('fase Esperada');
