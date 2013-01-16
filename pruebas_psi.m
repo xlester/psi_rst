@@ -1,20 +1,20 @@
 %% Generando Interferogramas Sinteticos.
 close all;
 clear all;
-M       = 256; % Number of rows of each interferogram.
-N       = 256; % Number of columns of each interferogram.
+M       = 512; % Number of rows of each interferogram.
+N       = 512; % Number of columns of each interferogram.
 k       = 5;   % Number of frames.
 A       = 40;  % Amplitud para la fase tipo Peaks.
 
-step    = pi/2; % Valor del paso.
+step    = pi/3; % Valor del paso.
 nv      = 0.0; % Varianza del Ruido.
 
-%DC      = makeParabola(M,N,55);
-DC      = makeGausiana(M,N,5,60);
-phase   = makeRampa(4*pi/M,4*pi/N,M,N);
-%phase   = makePeaks(N,M,A)+rampa;
+DC      = makeParabola(M,N,2)+2;
+%DC      = makeGausiana(M,N,5,60);
+rampa   = makeRampa(4*pi/M,4*pi/N,M,N);
+phase   = makePeaks(N,M,A)+rampa;
 b       = makeGausiana(M,N,1,95);
-step_noise = 0;
+step_noise = 0.5;
 
 [I,steps]       = makeI(DC,b,phase,step,step_noise,k,nv);
 steps = atan2(sin(steps),cos(steps));
@@ -22,11 +22,11 @@ steps = atan2(sin(steps),cos(steps));
 
 %% Inicializando parametros del metodo RST.
 
-Muestreo = 6; % Numero de pixeles a satar para el muestreo.
-iters1   = 20; % Numero de iteraciones para el metodo completo.
+Muestreo = 8; % Numero de pixeles a satar para el muestreo.
+iters1   = 25; % Numero de iteraciones para el metodo completo.
 iters2   = 50; % Numero de iteraciones para el calculo de los pasos.
 lambdaDC = 00; % Parametro de regulacizacion para el DC
-lambdaSC = 500; % Parametro de regulacizacion para Seno y Coseno.
+lambdaSC = 100; % Parametro de regulacizacion para Seno y Coseno.
 lambda   = 00; % Parametro de regulacizacion.
 %% Inicializando parametros del metodo AIA.
 
@@ -50,22 +50,22 @@ tAIA = toc;
 
 %% Eliminando Piston de fase.
 pasosRST = pasosRST-pasosRST(1);
-Sk = sin(pasosRST);
-Ck = cos(pasosRST);
-
-[a1 f_RST] = MinCuaCpp(I,Sk,Ck);
+% Sk = sin(pasosRST);
+% Ck = cos(pasosRST);
+% 
+% [a1 f_RST] = MinCuaCpp(I,Sk,Ck);
 % f_RSTreg = f_RST;
-% for x=1:200
-%     [a f_RSTreg] = MinCuaReg(I,f_RSTreg,a,Sk,Ck,1,15,3);
-% end
-
-pasosRST = atan2(Sk,Ck);
+% % for x=1:200
+% %     [a f_RSTreg] = MinCuaReg(I,f_RSTreg,a,Sk,Ck,1,15,3);
+% % end
+% 
+% pasosRST = atan2(Sk,Ck);
 
 pasosAIA = pasosAIA-pasosAIA(1);
-Sk = sin(pasosAIA);
-Ck = cos(pasosAIA);
-[a1 f_AIA] = MinCuaCpp(I,Sk,Ck);
-pasosAIA = atan2(Sk,Ck);
+% Sk = sin(pasosAIA);
+% Ck = cos(pasosAIA);
+% [a1 f_AIA] = MinCuaCpp(I,Sk,Ck);
+% pasosAIA = atan2(Sk,Ck);
 
 %% Mostrando Resultados.
 
@@ -74,6 +74,9 @@ SP_RST    = angle(f_RST);
 SP_AIA    = angle(f_AIA);
 wfase     = angle(exp(-1i*phase));
 errorReg = mean2(abs(wfase+SP_RST));
+
+std_RST = PhaseStd(wfase,SP_RST);
+std_AIA = PhaseStd(wfase,SP_AIA);
 
 %figure,imshow(-SP_RSTreg,[]),title('fase Estimada RST regularizada');
 figure,imshow(SP_RST,[]),title('fase Estimada RST');
@@ -96,5 +99,8 @@ disp(abs(steps - pasosAIA));
 disp('Error RST');
 disp(abs(steps - pasosRST));
 
-disp('Error medio de fase');
-disp(errorReg);
+disp('Error std RST');
+disp(std_RST);
+
+disp('Error std AIA');
+disp(std_AIA);
