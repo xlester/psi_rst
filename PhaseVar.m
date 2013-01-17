@@ -1,4 +1,4 @@
-function [var]=PhaseStd(realPhase,estPhase)
+function [var]=PhaseVar(realPhase,estPhase)
 [M N] = size(realPhase);
 
 
@@ -9,7 +9,7 @@ piston = sum(dif(:))/(M*N);
 estPhase = angle( exp( 1i*(estPhase-piston) ) );
 
 dif = angle( exp( 1i*(estPhase-realPhase) ) );
-var = sqrt(sum(sum(dif.^2))/(M*N));
+var = (sum(sum(dif.^2))/(M*N));
 
 
 

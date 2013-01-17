@@ -4,7 +4,7 @@ clear all;
 M       = 512; % Number of rows of each interferogram.
 N       = 512; % Number of columns of each interferogram.
 k       = 5;   % Number of frames.
-A       = 40;  % Amplitud para la fase tipo Peaks.
+A       = 30;  % Amplitud para la fase tipo Peaks.
 
 step    = pi/3; % Valor del paso.
 nv      = 0.0; % Varianza del Ruido.
@@ -13,20 +13,20 @@ DC      = makeParabola(M,N,2)+2;
 %DC      = makeGausiana(M,N,5,60);
 rampa   = makeRampa(4*pi/M,4*pi/N,M,N);
 phase   = makePeaks(N,M,A)+rampa;
-b       = makeGausiana(M,N,1,95);
+b       = makeGausiana(M,N,1,100);
 step_noise = 0.5;
 
 [I,steps]       = makeI(DC,b,phase,step,step_noise,k,nv);
-steps = atan2(sin(steps),cos(steps));
+%steps = atan2(sin(steps),cos(steps));
 
 
 %% Inicializando parametros del metodo RST.
 
-Muestreo = 8; % Numero de pixeles a satar para el muestreo.
+Muestreo = 6; % Numero de pixeles a satar para el muestreo.
 iters1   = 25; % Numero de iteraciones para el metodo completo.
 iters2   = 50; % Numero de iteraciones para el calculo de los pasos.
-lambdaDC = 00; % Parametro de regulacizacion para el DC
-lambdaSC = 100; % Parametro de regulacizacion para Seno y Coseno.
+lambdaDC = 100; % Parametro de regulacizacion para el DC
+lambdaSC = 500; % Parametro de regulacizacion para Seno y Coseno.
 lambda   = 00; % Parametro de regulacizacion.
 %% Inicializando parametros del metodo AIA.
 
@@ -43,11 +43,12 @@ tic
 [pasosRST f_RST S C a] = RST(I,Sk,Ck,lambdaDC,lambdaSC,Muestreo,iters1,iters2,Show);
 tRST = toc;
 pasosRST=AntiAliasing(pasosRST);
+
 % Aplicando algoritmo AIA.
 tic
 [pasosAIA f_AIA] = AIA(I,Sk,Ck,iters,Show);
 tAIA = toc;
-
+pasosAIA=AntiAliasing(pasosAIA);
 %% Eliminando Piston de fase.
 pasosRST = pasosRST-pasosRST(1);
 % Sk = sin(pasosRST);
@@ -73,10 +74,13 @@ pasosAIA = pasosAIA-pasosAIA(1);
 SP_RST    = angle(f_RST);
 SP_AIA    = angle(f_AIA);
 wfase     = angle(exp(-1i*phase));
-errorReg = mean2(abs(wfase+SP_RST));
+%errorReg = mean2(abs(wfase+SP_RST));
 
 std_RST = PhaseStd(wfase,SP_RST);
 std_AIA = PhaseStd(wfase,SP_AIA);
+
+eAveRST = mean(abs(steps - pasosRST));
+eAveAIA = mean(abs(steps - pasosAIA));
 
 %figure,imshow(-SP_RSTreg,[]),title('fase Estimada RST regularizada');
 figure,imshow(SP_RST,[]),title('fase Estimada RST');
@@ -92,15 +96,24 @@ disp(pasosRST);
 
 disp('Esperados');
 disp(steps);
+disp('--------------');
 
-disp('Error AIA');
+disp('Error Pasos AIA');
 disp(abs(steps - pasosAIA));
 
-disp('Error RST');
+disp('Error Pasos RST');
 disp(abs(steps - pasosRST));
+disp('--------------');
 
-disp('Error std RST');
+disp('Error Medio Pasos RST');
+disp(eAveRST);
+
+disp('Error Medio Pasos AIA');
+disp(eAveAIA);
+disp('--------------');
+
+disp('Phase Error varianza RST');
 disp(std_RST);
 
-disp('Error std AIA');
+disp('Phase Error varianza AIA');
 disp(std_AIA);
