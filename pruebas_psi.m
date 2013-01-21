@@ -23,7 +23,7 @@ step_noise = 0.5;
 %% Inicializando parametros del metodo RST.
 
 Muestreo = 6; % Numero de pixeles a satar para el muestreo.
-iters1   = 25; % Numero de iteraciones para el metodo completo.
+iters1   = 20; % Numero de iteraciones para el metodo completo.
 iters2   = 50; % Numero de iteraciones para el calculo de los pasos.
 lambdaDC = 100; % Parametro de regulacizacion para el DC
 lambdaSC = 500; % Parametro de regulacizacion para Seno y Coseno.
@@ -76,8 +76,8 @@ SP_AIA    = angle(f_AIA);
 wfase     = angle(exp(-1i*phase));
 %errorReg = mean2(abs(wfase+SP_RST));
 
-std_RST = PhaseStd(wfase,SP_RST);
-std_AIA = PhaseStd(wfase,SP_AIA);
+std_RST = PhaseVar(wfase,SP_RST);
+std_AIA = PhaseVar(wfase,SP_AIA);
 
 eAveRST = mean(abs(steps - pasosRST));
 eAveAIA = mean(abs(steps - pasosAIA));
