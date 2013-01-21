@@ -15,7 +15,7 @@ rampa   = makeRampa(4*pi/M,4*pi/N,M,N);
 phase   = makePeaks(N,M,A)+rampa;
 b       = makeGausiana(M,N,1,100);
 step_noise = 0.5;
-
+ 
 [I,steps]       = makeI(DC,b,phase,step,step_noise,k,nv);
 %steps = atan2(sin(steps),cos(steps));
 
