@@ -9,7 +9,7 @@ A       = 30;  % Amplitud para la fase tipo Peaks.
 step    = pi/3; % Valor del paso.
 nv      = 0.0; % Varianza del Ruido.
 
-DC      = makeParabola(M,N,2)+2;
+DC      = makeParabola(M,N,2);
 %DC      = makeGausiana(M,N,5,60);
 rampa   = makeRampa(4*pi/M,4*pi/N,M,N);
 phase   = makePeaks(N,M,A)+rampa;

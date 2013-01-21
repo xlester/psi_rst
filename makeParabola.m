@@ -8,5 +8,5 @@
 function [Parabola] = makeParabola(M,N,A)
     [X Y]    = meshgrid(1:N,1:M); 
     b        = (X-M/2).^2 + (Y-N/2).^2;
-    Parabola = (-b / (max(max(b))/1) +1 )*A;
+    Parabola = (-b / max(max(b)) )*A;
 end
